@@ -1,0 +1,37 @@
+name: Publish
+
+on:
+  workflow_call:
+    inputs:
+      fetch-submodules:
+        description: 'Whether to fetch submodules'
+        required: false
+        default: false
+      node-version:
+        type: string
+        description: 'Node.js version'
+        required: false
+      deploy-gh-pages:
+        type: boolean
+        description: 'Whether to deploy to GitHub Pages'
+        required: false
+        default: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: publish-${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Setup
+        uses: cordiverse/workflows/.github/actions/setup@master
+        with:
+          fetch-submodules: ${{ inputs.fetch-submodules }}
+          node-version: ${{ inputs.node-version }}
+
+      - name: Build
+        run: yarn build
+
+      - name: Publish
+        run: yarn pub
