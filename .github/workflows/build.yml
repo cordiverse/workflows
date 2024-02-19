@@ -1,0 +1,96 @@
+name: Build
+
+on:
+  workflow_call:
+    inputs:
+      fetch-submodules:
+        description: 'Whether to fetch submodules'
+        required: false
+        default: false
+      node-version:
+        type: string
+        description: 'Node.js version'
+        required: false
+      lint:
+        type: boolean
+        description: 'Whether to run linting'
+        required: false
+        default: true
+      test:
+        type: boolean
+        description: 'Whether to run tests'
+        required: false
+        default: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup
+        uses: cordiverse/workflows/.github/actions/setup@master
+        with:
+          fetch-submodules: ${{ inputs.fetch-submodules }}
+          node-version: ${{ inputs.node-version }}
+
+      - name: Build
+        run: yarn build
+
+  lint:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.lint == 'true' }}
+    steps:
+      - name: Check Lint Script
+        run: |
+          if [ -f "package.json" ]; then
+            if [ -z "$(jq -r '.scripts.lint' package.json)" ]; then
+              echo "::warning::Lint script not found in package.json, skipping linting. If you want to suppress this warning, either add a lint script or set the option `lint` to `false` in the workflow file."
+              echo "lint=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "::error::package.json not found."
+            exit 1
+          fi
+
+      - name: Setup
+        if: steps.check-lint-script.outputs.lint != 'false'
+        uses: cordiverse/workflows/.github/actions/setup@master
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Lint
+        if: steps.check-lint-script.outputs.lint != 'false'
+        run: yarn lint
+
+  test:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.test == 'true' }}
+    strategy:
+      matrix:
+        version: [18.x, 20.x]
+        fail-fast: false
+    steps:
+      - name: Check Test Script
+        run: |
+          if [ -f "package.json" ]; then
+            if [ -z "$(jq -r '.scripts.test' package.json)" ]; then
+              echo "::warning::Test script not found in package.json, skipping testing. If you want to suppress this warning, either add a test script or set the option `test` to `false` in the workflow file."
+              echo "test=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "::error::package.json not found."
+            exit 1
+          fi
+
+      - name: Setup
+        uses: cordiverse/workflows/.github/actions/setup@master
+        with:
+          node-version: ${{ inputs.node-version || matrix.version }}
+
+      # Some projects may require a build step before testing.
+      - name: Build
+        if: steps.check-test-script.outputs.test != 'false'
+        run: yarn build
+
+      - name: Test
+        if: steps.check-test-script.outputs.test != 'false'
+        run: yarn test
