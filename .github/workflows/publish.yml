@@ -26,7 +26,7 @@ jobs:
       cancel-in-progress: true
     steps:
       - name: Setup
-        uses: cordiverse/workflows/.github/actions/setup@master
+        uses: cordiverse/workflows/.github/actions/setup@main
         with:
           fetch-submodules: ${{ inputs.fetch-submodules }}
           node-version: ${{ inputs.node-version }}
