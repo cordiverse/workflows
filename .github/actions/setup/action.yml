@@ -15,7 +15,6 @@ runs:
   using: 'composite'
   steps:
     - name: Checkout Code
-      if: ${{ inputs.no-checkout == 'false' }}
       uses: actions/checkout@v4
       with:
         submodules: ${{ inputs.fetch-submodules }}
