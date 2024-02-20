@@ -4,6 +4,7 @@ on:
   workflow_call:
     inputs:
       fetch-submodules:
+        type: boolean
         description: 'Whether to fetch submodules'
         required: false
         default: false
@@ -40,6 +41,7 @@ jobs:
     if: ${{ inputs.lint == 'true' }}
     steps:
       - name: Check Lint Script
+        id: check-lint-script
         run: |
           if [ -f "package.json" ]; then
             if [ -z "$(jq -r '.scripts.lint' package.json)" ]; then
@@ -65,11 +67,12 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ inputs.test == 'true' }}
     strategy:
+      fail-fast: false
       matrix:
         version: [18.x, 20.x]
-        fail-fast: false
     steps:
       - name: Check Test Script
+        id: check-test-script
         run: |
           if [ -f "package.json" ]; then
             if [ -z "$(jq -r '.scripts.test' package.json)" ]; then

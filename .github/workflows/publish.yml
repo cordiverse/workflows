@@ -4,6 +4,7 @@ on:
   workflow_call:
     inputs:
       fetch-submodules:
+        type: boolean
         description: 'Whether to fetch submodules'
         required: false
         default: false

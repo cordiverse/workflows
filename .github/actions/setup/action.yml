@@ -17,6 +17,8 @@ runs:
     - name: Checkout Code
       if: ${{ inputs.no-checkout == 'false' }}
       uses: actions/checkout@v4
+      with:
+        submodules: ${{ inputs.fetch-submodules }}
 
     - name: Set up Node.js
       uses: actions/setup-node@v4
