@@ -36,6 +36,7 @@ jobs:
       - name: Build
         run: |
           (yarn build 2>&1) | tee build.log
+          exit ${PIPESTATUS[0]}
 
       - name: Create Result Markdown
         if: ${{ success() || failure() }}
@@ -53,6 +54,7 @@ jobs:
           EOF
 
       - name: Upload Build Log
+        if: ${{ success() || failure() }}
         uses: actions/upload-artifact@v4
         with:
           name: build-log
@@ -85,9 +87,10 @@ jobs:
         if: steps.check-lint-script.outputs.lint != 'false'
         run: |
           (yarn lint 2>&1) | tee lint.log
+          exit ${PIPESTATUS[0]}
 
       - name: Create Result Markdown
-        if: ${{ success() || failure() }}
+        if: ${{ steps.check-lint-script.outputs.lint != 'false' && (success() || failure()) }}
         run: |
           tee -a output.md <<EOF
           ### Lint $([ ${{ job.status }} -eq 'success' ] && echo "✅" || echo "❌")
@@ -102,7 +105,7 @@ jobs:
           EOF
 
       - name: Upload Lint Log
-        if: steps.check-lint-script.outputs.lint != 'false'
+        if: ${{ steps.check-lint-script.outputs.lint != 'false' && (success() || failure()) }}
         uses: actions/upload-artifact@v4
         with:
           name: lint-log
@@ -145,9 +148,10 @@ jobs:
         if: steps.check-test-script.outputs.test != 'false'
         run: |
           (yarn test 2>&1) | tee test.log
+          exit ${PIPESTATUS[0]}
 
       - name: Create Result Markdown
-        if: ${{ success() || failure() }}
+        if: ${{ steps.check-test-script.outputs.test != 'false' && (success() || failure()) }}
         run: |
           tee -a output.md <<EOF
           ### Test $([ ${{ job.status }} -eq 'success' ] && echo "✅" || echo "❌")
@@ -162,7 +166,7 @@ jobs:
           EOF
 
       - name: Upload Test Log
-        if: steps.check-test-script.outputs.test != 'false'
+        if: ${{ steps.check-test-script.outputs.test != 'false' && (success() || failure()) }}
         uses: actions/upload-artifact@v4
         with:
           name: test-log
@@ -185,7 +189,7 @@ jobs:
         run: |
           mkdir output
           echo $'## PR Health \n\n' >> output/comment.md
-          cat log/*/*.md >> output/comment.md
+          cat log/*/output.md >> output/comment.md
           echo ${{ github.event.number }} > output/issueNumber
 
       - name: Find Comment
