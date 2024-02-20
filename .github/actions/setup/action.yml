@@ -41,7 +41,7 @@ runs:
 
     - name: Get Yarn Cache Directory Path (Yarn 2)
       if: steps.yarn-version.outputs.is-berry == '1'
-      id: yarn-cache-dir-path
+      id: yarn-berry-cache-dir-path
       shell: bash
       run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
 
@@ -49,7 +49,7 @@ runs:
       id: cache-yarn
       uses: actions/cache@v4
       with:
-        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+        path: ${{ steps.yarn-cache-dir-path.outputs.dir || steps.yarn-berry-cache-dir-path.outputs.dir }}
         key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
         restore-keys: |
           ${{ runner.os }}-yarn-
