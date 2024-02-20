@@ -34,7 +34,29 @@ jobs:
           node-version: ${{ inputs.node-version }}
 
       - name: Build
-        run: yarn build
+        run: |
+          (yarn build 2>&1) | tee build.log
+
+      - name: Create Result Markdown
+        if: ${{ success() || failure() }}
+        run: |
+          tee -a output.md <<EOF
+          ### Build $([ ${{ job.status }} -eq 'success' ] && echo "✅" || echo "❌")
+
+          <details>
+            <summary>Details</summary>
+
+            \`\`\`shell
+            $(cat build.log)
+            \`\`\`
+          </details>
+          EOF
+
+      - name: Upload Build Log
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: output.md
 
   lint:
     runs-on: ubuntu-latest
@@ -61,7 +83,30 @@ jobs:
 
       - name: Lint
         if: steps.check-lint-script.outputs.lint != 'false'
-        run: yarn lint
+        run: |
+          (yarn lint 2>&1) | tee lint.log
+
+      - name: Create Result Markdown
+        if: ${{ success() || failure() }}
+        run: |
+          tee -a output.md <<EOF
+          ### Lint $([ ${{ job.status }} -eq 'success' ] && echo "✅" || echo "❌")
+
+          <details>
+            <summary>Details</summary>
+
+            \`\`\`shell
+            $(cat lint.log)
+            \`\`\`
+          </details>
+          EOF
+
+      - name: Upload Lint Log
+        if: steps.check-lint-script.outputs.lint != 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-log
+          path: output.md
 
   test:
     runs-on: ubuntu-latest
@@ -94,6 +139,69 @@ jobs:
         if: steps.check-test-script.outputs.test != 'false'
         run: yarn build
 
+      # Here we use the `tee` command to log the output to a file
+      # but also display it in the console.
       - name: Test
         if: steps.check-test-script.outputs.test != 'false'
-        run: yarn test
+        run: |
+          (yarn test 2>&1) | tee test.log
+
+      - name: Create Result Markdown
+        if: ${{ success() || failure() }}
+        run: |
+          tee -a output.md <<EOF
+          ### Test $([ ${{ job.status }} -eq 'success' ] && echo "✅" || echo "❌")
+
+          <details>
+            <summary>Details</summary>
+
+            \`\`\`shell
+            $(cat test.log)
+            \`\`\`
+          </details>
+          EOF
+
+      - name: Upload Test Log
+        if: steps.check-test-script.outputs.test != 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-log
+          path: output.md
+
+  comment:
+    runs-on: ubuntu-latest
+    needs: [build, lint, test]
+    if: ${{ always() && github.event_name == 'pull_request' }}
+    # Required permissions for the `comment` job.
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Download All Logs
+        uses: actions/download-artifact@v4
+        with:
+          path: log
+
+      - name: Merge to Single Comment
+        run: |
+          mkdir output
+          echo $'## PR Health \n\n' >> output/comment.md
+          cat log/*/*.md >> output/comment.md
+          echo ${{ github.event.number }} > output/issueNumber
+
+      - name: Find Comment
+        uses: peter-evans/find-comment@v3
+        id: fc
+        with:
+          issue-number: ${{ github.event.number }}
+          comment-author: github-actions[bot]
+          body-includes: '## PR Health'
+
+      - name: Write comment id to file
+        if: ${{ steps.fc.outputs.comment-id != 0 }} 
+        run: echo ${{ steps.fc.outputs.comment-id }} >> output/commentId
+
+      - name: Upload folder with number and markdown
+        uses: actions/upload-artifact@v4
+        with:
+          name: output
+          path: output/

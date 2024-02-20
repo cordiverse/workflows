@@ -1,0 +1,10 @@
+name: Comment on Pull Requests
+
+on:
+  workflow_call:
+
+jobs:
+  upload:
+    permissions:
+      pull-requests: write
+    uses: dart-lang/ecosystem/.github/workflows/post_summaries.yaml@main
