@@ -36,11 +36,13 @@ runs:
     - name: Get Yarn Cache Directory Path (Yarn 1)
       if: steps.yarn-version.outputs.is-berry == '0'
       id: yarn-cache-dir-path
+      shell: bash
       run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
 
     - name: Get Yarn Cache Directory Path (Yarn 2)
       if: steps.yarn-version.outputs.is-berry == '1'
       id: yarn-cache-dir-path
+      shell: bash
       run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
 
     - name: Cache Dependencies
