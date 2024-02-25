@@ -72,5 +72,5 @@ Options:
 Secrets:
 
 |Name|Required|Default|Description|
-|:-:|:-:|:-:|:-:|:-:|
+|:-:|:-:|:-:|:-:|
 |`NPM_TOKEN`|Yes|null|The token used for publishing plugins on npmjs.com|
