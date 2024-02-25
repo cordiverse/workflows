@@ -42,7 +42,7 @@ jobs:
         if: ${{ success() || failure() }}
         run: |
           tee -a output.md <<EOF
-          ### Build $([ "${{ job.status }}" -eq 'success' ] && echo "✅" || echo "❌")
+          ### Build $([ "${{ job.status }}" = 'success' ] && echo "✅" || echo "❌")
 
           <details>
             <summary>Details</summary>
