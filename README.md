@@ -30,7 +30,7 @@ jobs:
 Options:
 
 |Name|Type|Required|Default|Description|
-|:-:|:-:|:-:|:-:|
+|:-:|:-:|:-:|:-:|:-:|
 |`fetch-submodules`|`boolean`|No|`false`|Whether to fetch submodules|
 |`node-version`|`string`|No|`null`|Node.js version|
 |`lint`|`boolean`|No|`false`|Whether to run linting|
