@@ -100,7 +100,7 @@ jobs:
         if: ${{ steps.check-lint-script.outputs.lint != 'false' && (success() || failure()) }}
         run: |
           tee -a output.md <<EOF
-          ### Lint $([ ${{ job.status }} -eq 'success' ] && echo "✅" || echo "❌")
+          ### Lint $([ "${{ job.status }}" = 'success' ] && echo "✅" || echo "❌")
 
           <details>
             <summary>Details</summary>
@@ -168,7 +168,7 @@ jobs:
         if: ${{ steps.check-test-script.outputs.test != 'false' && (success() || failure()) }}
         run: |
           tee -a output.md <<EOF
-          ### Test $([ ${{ job.status }} -eq 'success' ] && echo "✅" || echo "❌")
+          ### Test $([ "${{ job.status }}" = 'success' ] && echo "✅" || echo "❌")
 
           <details>
             <summary>Details</summary>
