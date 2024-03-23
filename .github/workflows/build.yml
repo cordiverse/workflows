@@ -64,6 +64,12 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ inputs.lint == 'true' || inputs.lint == true }}
     steps:
+      - name: Setup
+        uses: cordiverse/workflows/.github/actions/setup@main
+        with:
+          fetch-submodules: ${{ inputs.fetch-submodules }}
+          node-version: ${{ inputs.node-version }}
+
       - name: Check Lint Script
         id: check-lint-script
         run: |
@@ -119,6 +125,12 @@ jobs:
       matrix:
         version: [18.x, 20.x]
     steps:
+      - name: Setup
+        uses: cordiverse/workflows/.github/actions/setup@main
+        with:
+          fetch-submodules: ${{ inputs.fetch-submodules }}
+          node-version: ${{ inputs.node-version }}
+
       - name: Check Test Script
         id: check-test-script
         run: |
