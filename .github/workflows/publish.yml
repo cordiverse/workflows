@@ -43,4 +43,4 @@ jobs:
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
 
       - name: Publish
-        run: yarn pub
+        run: yarn pub --debug
