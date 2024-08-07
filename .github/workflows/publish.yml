@@ -40,6 +40,7 @@ jobs:
 
       - name: Set NPM Token
         id: set-token
+        # Solution for NPM (as well as Yarn v1)
         run: |
           # Create a temporary directory for putting the .npmrc file
           tempdir=$(mktemp -d)
@@ -57,6 +58,11 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           npm_config_userconfig: ${{ steps.set-token.outputs.tempdir }}/.npmrc
+          # Solution for Yarn Berry
+          # Since Yarn Berry doesn't respect the .npmrc file, and it also doesn't have a way to set
+          # the config folder, we need to directly set the NPM token in the environment variables.
+          # This is not ideal, but it's the only way to make it work.
+          YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Remove Temporary Directory
         # This step will always run, even if the previous steps fail
