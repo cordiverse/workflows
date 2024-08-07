@@ -12,11 +12,6 @@ on:
         type: string
         description: 'Node.js version'
         required: false
-      deploy-gh-pages:
-        type: boolean
-        description: 'Whether to deploy to GitHub Pages'
-        required: false
-        default: false
     secrets:
       NPM_TOKEN:
         required: true
