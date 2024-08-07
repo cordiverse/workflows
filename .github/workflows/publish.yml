@@ -39,8 +39,26 @@ jobs:
         run: yarn build
 
       - name: Set NPM Token
+        id: set-token
         run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          # Create a temporary directory for putting the .npmrc file
+          tempdir=$(mktemp -d)
+
+          echo "; Created by cordiverse/publish workflow for $GITHUB_REPOSITORY" > ${tempdir}/.npmrc
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ${tempdir}/.npmrc
+          echo "registry=https://registry.npmjs.org/" >> ${tempdir}/.npmrc
+          echo "" >> ${tempdir}/.npmrc
+
+          # Output the temporary directory path so it can be used by the next step
+          echo "tempdir=${tempdir}" >> $GITHUB_OUTPUT
 
       - name: Publish
         run: yarn pub --debug
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          npm_config_userconfig: ${{ steps.set-token.outputs.tempdir }}/.npmrc
+
+      - name: Remove Temporary Directory
+        # This step will always run, even if the previous steps fail
+        if: always()
+        run: rm -rf ${{ steps.set-token.outputs.tempdir }}
