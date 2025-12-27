@@ -24,6 +24,10 @@ runs:
       with:
         node-version: ${{ inputs.node-version }}
 
+    - name: Enable Corepack
+      shell: bash
+      run: corepack enable
+
     - name: Check Yarn Version
       id: yarn-version
       shell: bash
