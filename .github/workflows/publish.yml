@@ -12,17 +12,19 @@ on:
         type: string
         description: 'Node.js version'
         required: false
-    secrets:
-      NPM_TOKEN:
-        required: false
-        description: 'NPM token'
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
     concurrency:
       group: publish-${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
+
     steps:
       - name: Setup
         uses: cordiverse/workflows/.github/actions/setup@main
@@ -34,40 +36,9 @@ jobs:
         run: yarn build
 
       - name: Set Publish Config
-        id: set-token
-        if: '!secrets.NPM_TOKEN'
         run: |
           yarn config set npmPublishProvenance true
           yarn config set npmRegistryServer https://registry.npmjs.org/
 
-      - name: Set NPM Token
-        id: set-token
-        if: secrets.NPM_TOKEN
-        # Solution for NPM (as well as Yarn v1)
-        run: |
-          # Create a temporary directory for putting the .npmrc file
-          tempdir=$(mktemp -d)
-
-          echo "; Created by cordiverse/publish workflow for $GITHUB_REPOSITORY" > ${tempdir}/.npmrc
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ${tempdir}/.npmrc
-          echo "registry=https://registry.npmjs.org/" >> ${tempdir}/.npmrc
-          echo "" >> ${tempdir}/.npmrc
-
-          # Output the temporary directory path so it can be used by the next step
-          echo "tempdir=${tempdir}" >> $GITHUB_OUTPUT
-
       - name: Publish
         run: yarn pub --debug
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          npm_config_userconfig: ${{ steps.set-token.outputs.tempdir }}/.npmrc
-          # Solution for Yarn Berry
-          # Since Yarn Berry doesn't respect the .npmrc file, and it also doesn't have a way to set
-          # the config folder, we need to directly set the NPM token in the environment variables.
-          # This is not ideal, but it's the only way to make it work.
-          YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Remove Temporary Directory
-        # This step will always run, even if the previous steps fail
-        if: always()
-        run: rm -rf ${{ steps.set-token.outputs.tempdir }}
