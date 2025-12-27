@@ -42,7 +42,7 @@ Options:
 
 The publish workflow contains the `publish` job, which can publish your plugin(s) onto [`npmjs.com`](https://npmjs.com).
 
-The `publish` job would checkout the current repository fist, then run the `yarn`, `yarn build` and `yarn pub` commands iteratively. You should pass the `NPM_TOKEN` to the workflow with the `secrets` option, see below for details.
+The `publish` job would checkout the current repository fist, then run the `yarn`, `yarn build` and `yarn pub` commands iteratively.
 
 Example:
 
@@ -57,9 +57,6 @@ on:
 jobs:
   publish:
     uses: cordiverse/workflows/.github/workflows/publish.yml@main
-    # or you can also set `secrets: { inherits: true }` to inherit every secret.
-    secrets:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 ```
 
 Options:
@@ -68,9 +65,3 @@ Options:
 |:-:|:-:|:-:|:-:|:-:|
 |`fetch-submodules`|`boolean`|No|`false`|Whether to fetch submodules|
 |`node-version`|`string`|No|`null`|Node.js version|
-
-Secrets:
-
-|Name|Required|Default|Description|
-|:-:|:-:|:-:|:-:|
-|`NPM_TOKEN`|Yes|null|The token used for publishing plugins on npmjs.com|
